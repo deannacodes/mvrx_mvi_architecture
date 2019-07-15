@@ -8,11 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import com.airbnb.mvrx.*
 import com.deanna.mvrx.R
+import com.deanna.mvrx.mvibase.BaseFragment
+import com.deanna.mvrx.mvibase.simpleController
+import com.deanna.mvrx.ui.views.basicRow
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.main_fragment.*
 import javax.inject.Inject
 
-class UsersFragment : BaseMvRxFragment() {
+class UsersFragment : BaseFragment() {
 
     @Inject
     lateinit var viewModelFactory: UsersViewModel.Factory
@@ -23,23 +25,38 @@ class UsersFragment : BaseMvRxFragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) =
-        inflater.inflate(R.layout.main_fragment, container, false)
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        text.setOnClickListener {
-            viewModel.fetchUser()
-        }
+        viewModel.asyncSubscribe(UsersState::users)
     }
 
-    override fun invalidate() = withState(viewModel) { state ->
-        text.text = when (state.users) {
-            Uninitialized -> "Empty"
-            is Loading -> "Loading"
-            is Success -> state.users.toString()
-            is Fail -> "".also { logError(state.users.error) }
+    override fun epoxyController() = simpleController(viewModel) { state ->
+
+
+        val list = state.users.invoke()
+
+        list?.forEach { user ->
+            basicRow {
+                id(user.userId.toString())
+                title(user.userName)
+                subtitle("Rep: " + user.reputation.toString())
+                image(user.imageUrl)
+//                clickListener { _ ->
+//                    navigateTo(
+//                        R.id.action_dadJokeIndex_to_dadJokeDetailFragment,
+//                        DadJokeDetailArgs(joke.id)
+//                    )
+//                }
+            }
         }
+
+//        loadingRow {
+//            // Changing the ID will force it to rebind when new data is loaded even if it is
+//            // still on screen which will ensure that we trigger loading again.
+//            id("loading${state.users.invoke()?.size}")
+//            onBind { _, _, _ -> viewModel.fetchUsers() }
+//        }
     }
+
 }
 
 
