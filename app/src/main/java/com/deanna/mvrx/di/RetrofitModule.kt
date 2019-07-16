@@ -21,6 +21,14 @@ import javax.inject.Singleton
 @Module
 object RetrofitModule {
 
+    fun logging() : OkHttpClient {
+        val logging = HttpLoggingInterceptor()
+        logging.level = HttpLoggingInterceptor.Level.BODY
+        val httpClient = OkHttpClient.Builder()
+        httpClient.addInterceptor(logging)
+        return httpClient.build()
+    }
+
     @JvmStatic
     @Provides
     @Singleton
@@ -28,6 +36,7 @@ object RetrofitModule {
         .baseUrl("https://api.stackexchange.com/2.2/")
         .addConverterFactory(GsonConverterFactory.create())
         .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
+        .client(logging())
         .build()
         .create(StackOverflowService::class.java)
 }

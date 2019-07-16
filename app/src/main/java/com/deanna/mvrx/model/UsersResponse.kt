@@ -1,7 +1,5 @@
 package com.deanna.mvrx.model
 
-import com.deanna.mvrx.database.entity.UserDetailEntity
-import com.deanna.mvrx.database.entity.UserEntity
 import com.google.gson.annotations.SerializedName
 
 data class UsersResponse(
@@ -9,7 +7,19 @@ data class UsersResponse(
     @SerializedName("items") val userResponses: List<UserResponse>,
     @SerializedName("quota_max") val quota_max: Int,
     @SerializedName("quota_remaining") val quota_remaining: Int
-)
+) {
+    fun toUsers(): List<User> {
+        return if (this.userResponses == null) emptyList()
+        else this.userResponses.map {
+            User(it.user_id ?: -1, it.display_name ?: "", it.reputation ?: -1, it.profile_image ?: "", it.website_url ?: "")
+        }
+    }
+
+    fun toUser(): User {
+        val user = this.userResponses[0]
+        return User(user.user_id, user.display_name, user.reputation, user.profile_image ?: "", user.website_url ?: "")
+    }
+}
 
 data class UserResponse(
     @SerializedName("accept_rate") val accept_rate: Int,
@@ -32,42 +42,7 @@ data class UserResponse(
     @SerializedName("user_id") val user_id: Int,
     @SerializedName("user_type") val user_type: String,
     @SerializedName("website_url") val website_url: String
-) {
-    fun toUserEntity(): UserEntity {
-        return UserEntity(
-            user_id,
-            display_name,
-            reputation,
-            profile_image,
-            website_url,
-            last_access_date
-        )
-    }
-
-    fun toUserDetailEntity(): UserDetailEntity {
-        return UserDetailEntity(
-            user_id,
-            display_name,
-            reputation,
-            profile_image,
-            website_url,
-            last_access_date,
-            accept_rate,
-            account_id,
-            creation_date,
-            is_employee,
-            last_modified_date,
-            link,
-            location,
-            reputation_change_day,
-            reputation_change_month,
-            reputation_change_quarter,
-            reputation_change_week,
-            reputation_change_year,
-            user_type
-        )
-    }
-}
+)
 
 data class BadgeCounts(
     @SerializedName("bronze") val bronze: Int,

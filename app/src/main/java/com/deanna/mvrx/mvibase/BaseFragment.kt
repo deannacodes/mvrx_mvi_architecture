@@ -1,27 +1,33 @@
 package com.deanna.mvrx.mvibase
 
+import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SearchView
 import androidx.annotation.IdRes
-import androidx.appcompat.widget.Toolbar
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.setupWithNavController
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.airbnb.epoxy.EpoxyRecyclerView
-import com.airbnb.mvrx.BaseMvRxFragment
-import com.airbnb.mvrx.MvRx
+import com.airbnb.mvrx.*
 import com.deanna.mvrx.R
+import dagger.android.support.AndroidSupportInjection
 
 
 abstract class BaseFragment : BaseMvRxFragment() {
 
-    protected lateinit var recyclerView: EpoxyRecyclerView
-    protected lateinit var toolbar: Toolbar
-    protected lateinit var coordinatorLayout: CoordinatorLayout
+    private lateinit var recyclerView: EpoxyRecyclerView
+    protected lateinit var searchView: SearchView
+    protected lateinit var swipeRefreshLayout: SwipeRefreshLayout
     protected val epoxyController by lazy { epoxyController() }
+
+
+    override fun onAttach(context: Context?) {
+        AndroidSupportInjection.inject(this)
+        super.onAttach(context)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,29 +39,25 @@ abstract class BaseFragment : BaseMvRxFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_base_mvrx, container, false).apply {
+        container?.clearDisappearingChildren();
+        return inflater.inflate(R.layout.main_fragment, container, false).apply {
             recyclerView = findViewById(R.id.recycler_view)
-            toolbar = findViewById(R.id.toolbar)
-            coordinatorLayout = findViewById(R.id.coordinator_layout)
-
+            swipeRefreshLayout = findViewById(R.id.users_swipe_refresh_layout)
+            searchView = findViewById(R.id.user_list_search_view)
             recyclerView.setController(epoxyController)
-
         }
     }
 
-    override fun invalidate() {
-        recyclerView.requestModelBuild()
-    }
-
-    /**
-     * Provide the EpoxyController to use when building models for this Fragment.
-     * Basic usages can simply use [simpleController]
-     */
     abstract fun epoxyController(): MvRxEpoxyController
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         epoxyController.onSaveInstanceState(outState)
+    }
+
+
+    override fun invalidate() {
+        recyclerView.requestModelBuild()
     }
 
     override fun onDestroyView() {
@@ -64,12 +66,9 @@ abstract class BaseFragment : BaseMvRxFragment() {
     }
 
     protected fun navigateTo(@IdRes actionId: Int, arg: Parcelable? = null) {
-        /**
-         * If we put a parcelable arg in [MvRx.KEY_ARG] then MvRx will attempt to call a secondary
-         * constructor on any MvRxState objects and pass in this arg directly.
-         * @see [com.airbnb.mvrx.sample.features.dadjoke.DadJokeDetailState]
-         */
+
         val bundle = arg?.let { Bundle().apply { putParcelable(MvRx.KEY_ARG, it) } }
         findNavController().navigate(actionId, bundle)
+
     }
 }

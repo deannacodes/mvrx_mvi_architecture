@@ -1,6 +1,7 @@
 package com.deanna.mvrx.di
 
 import com.deanna.mvrx.ui.MainActivity
+import com.deanna.mvrx.ui.userprofile.UserProfileFragment
 import com.deanna.mvrx.ui.users.UsersFragment
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
@@ -13,6 +14,6 @@ abstract class ActivityFragmentBuilder {
     @ContributesAndroidInjector
     abstract fun bindUsersFragment(): UsersFragment
 
-//    @ContributesAndroidInjector
-//    abstract fun bindUserProfileFragment(): UserProfileFragment
+    @ContributesAndroidInjector
+    abstract fun bindUserProfileFragment(): UserProfileFragment
 }

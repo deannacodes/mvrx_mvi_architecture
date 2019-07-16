@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:startDestination="@id/usersListIndex">
+
+    <fragment
+        android:id="@+id/usersListIndex"
+        android:name="com.deanna.mvrx.ui.users.UsersFragment">
+        <action
+            android:id="@+id/action_usersListIndex_to_usersProfileFragment"
+            app:destination="@id/userProfileFragment"/>
+    </fragment>
+    <fragment
+            android:id="@+id/userProfileFragment"
+            android:name="com.deanna.mvrx.ui.userprofile.UserProfileFragment"/>
+
+</navigation>

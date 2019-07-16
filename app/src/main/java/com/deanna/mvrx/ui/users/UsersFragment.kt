@@ -6,10 +6,17 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.airbnb.mvrx.*
+import android.widget.SearchView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.airbnb.epoxy.EpoxyRecyclerView
+import com.airbnb.mvrx.Loading
+import com.airbnb.mvrx.Uninitialized
+import com.airbnb.mvrx.fragmentViewModel
+import com.airbnb.mvrx.withState
 import com.deanna.mvrx.R
 import com.deanna.mvrx.mvibase.BaseFragment
 import com.deanna.mvrx.mvibase.simpleController
+import com.deanna.mvrx.ui.userprofile.UserProfileArgs
 import com.deanna.mvrx.ui.views.basicRow
 import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
@@ -20,17 +27,28 @@ class UsersFragment : BaseFragment() {
     lateinit var viewModelFactory: UsersViewModel.Factory
     private val viewModel: UsersViewModel by fragmentViewModel()
 
-    override fun onAttach(context: Context?) {
-        AndroidSupportInjection.inject(this)
-        super.onAttach(context)
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.asyncSubscribe(UsersState::users)
+        swipeRefreshLayout.setOnRefreshListener { viewModel.fetchUsers() }
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                viewModel.searchUsers(query ?: "")
+                return false
+            }
+
+            override fun onQueryTextChange(query: String?): Boolean = false
+        })
+        searchView.setOnCloseListener(object : SearchView.OnCloseListener {
+            override fun onClose(): Boolean {
+                viewModel.fetchUsers()
+                return false
+            }
+        })
     }
 
-    override fun epoxyController() = simpleController(viewModel) { state ->
 
+    override fun epoxyController() = simpleController(viewModel) { state ->
 
         val list = state.users.invoke()
 
@@ -40,21 +58,21 @@ class UsersFragment : BaseFragment() {
                 title(user.userName)
                 subtitle("Rep: " + user.reputation.toString())
                 image(user.imageUrl)
-//                clickListener { _ ->
-//                    navigateTo(
-//                        R.id.action_dadJokeIndex_to_dadJokeDetailFragment,
-//                        DadJokeDetailArgs(joke.id)
-//                    )
-//                }
+                clickListener { _ ->
+                    navigateTo(
+                        R.id.action_usersListIndex_to_usersProfileFragment,
+                        UserProfileArgs(user.userId)
+                    )
+                }
             }
         }
 
-//        loadingRow {
-//            // Changing the ID will force it to rebind when new data is loaded even if it is
-//            // still on screen which will ensure that we trigger loading again.
-//            id("loading${state.users.invoke()?.size}")
-//            onBind { _, _, _ -> viewModel.fetchUsers() }
-//        }
+    }
+
+
+    override fun invalidate() = withState(viewModel) { state ->
+        super.invalidate()
+        swipeRefreshLayout.isRefreshing = state.users is Loading || state.users is Uninitialized
     }
 
 }

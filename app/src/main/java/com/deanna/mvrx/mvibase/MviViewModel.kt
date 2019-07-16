@@ -2,6 +2,7 @@ package com.deanna.mvrx.mvibase
 
 import com.airbnb.mvrx.BaseMvRxViewModel
 import com.airbnb.mvrx.BuildConfig
+import com.airbnb.mvrx.MvRxState
 import io.reactivex.Observable
 
 /**
@@ -12,7 +13,7 @@ import io.reactivex.Observable
  * to.
  * @param S Top class of the [MviViewState] the [MviViewModel] will be emitting.
  */
-abstract class MviViewModel<I : MviIntent, S : MviViewState>(initialState: S) : BaseMvRxViewModel<S>(initialState, debugMode = BuildConfig.DEBUG) {
+abstract class MviViewModel<I : MviIntent, S : MvRxState>(initialState: S) : BaseMvRxViewModel<S>(initialState, debugMode = BuildConfig.DEBUG) {
     abstract fun processIntents(intents: Observable<I>)
     abstract fun states(): Observable<S>
 }

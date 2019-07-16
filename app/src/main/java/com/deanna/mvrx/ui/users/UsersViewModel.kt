@@ -2,6 +2,7 @@ package com.deanna.mvrx.ui.users
 
 import com.airbnb.mvrx.*
 import com.deanna.mvrx.model.User
+import com.deanna.mvrx.model.UserResponse
 import com.deanna.mvrx.model.UsersResponse
 import com.deanna.mvrx.mvibase.MviViewModel
 import com.deanna.mvrx.mvibase.MviViewState
@@ -35,21 +36,25 @@ class UsersViewModel @AssistedInject constructor(
 
         stackOverflowService
             .getUsersRx()
-            .map(::toUsers)
+            .map(UsersResponse::toUsers)
             .subscribeOn(Schedulers.io())
             .execute {
                 copy(users = it)
             }
     }
 
-    fun toUsers(users: UsersResponse): List<User> {
+    fun searchUsers(query: String) = withState { state ->
+        if (state.users is Loading) return@withState
 
-        return if (users.userResponses == null) emptyList()
-        else users.userResponses.map {
-            User(it.account_id, it.display_name, it.reputation, it.profile_image, it.website_url)
-        }
-
+        stackOverflowService
+            .getUsersRxSearch(query)
+            .map(UsersResponse::toUsers)
+            .subscribeOn(Schedulers.io())
+            .execute {
+                copy(users = it)
+            }
     }
+
 
     @AssistedInject.Factory
     interface Factory {
