@@ -1,4 +1,4 @@
-package com.deanna.mvrx
+package com.deanna.mvrx.mvibase
 
 import com.airbnb.mvrx.BaseMvRxViewModel
 import com.airbnb.mvrx.BuildConfig
