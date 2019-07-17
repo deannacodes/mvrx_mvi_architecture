@@ -1,32 +1,20 @@
 package com.deanna.mvrx.ui.users
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.SearchView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.airbnb.epoxy.EpoxyRecyclerView
-import com.airbnb.mvrx.Loading
-import com.airbnb.mvrx.Uninitialized
-import com.airbnb.mvrx.fragmentViewModel
-import com.airbnb.mvrx.withState
+import com.airbnb.mvrx.*
 import com.deanna.mvrx.R
 import com.deanna.mvrx.mvibase.BaseFragment
-import com.deanna.mvrx.mvibase.MviIntent
 import com.deanna.mvrx.mvibase.simpleController
 import com.deanna.mvrx.ui.userprofile.UserProfileArgs
 import com.deanna.mvrx.ui.views.basicRow
 import com.jakewharton.rxbinding2.support.v4.widget.RxSwipeRefreshLayout
 import com.jakewharton.rxbinding2.widget.RxSearchView
-import com.jakewharton.rxbinding2.widget.SearchViewQueryTextEvent
 import com.jakewharton.rxrelay2.PublishRelay
-import dagger.android.support.AndroidSupportInjection
 import io.reactivex.Observable
-import io.reactivex.ObservableTransformer
-import io.reactivex.subjects.PublishSubject
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class UsersFragment : BaseFragment() {
@@ -35,20 +23,22 @@ class UsersFragment : BaseFragment() {
     lateinit var viewModelFactory: UsersViewModel.Factory
     private val viewModel: UsersViewModel by fragmentViewModel()
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        viewModel.asyncSubscribe(UsersState::users)
+        /* subscribe to Async object in the state of the viewModel
+         * we'll know when it changes */
+        viewModel.asyncSubscribe(UsersState::users) {
+            //do something on success
+        }
+        /* send intents directly to the view model
+        *  keep the fragment dumb */
         viewModel.processIntents(intents())
     }
 
-
     override fun epoxyController() = simpleController(viewModel) { state ->
-
         val list = state.users.invoke()
-
         list?.forEach { user ->
             basicRow {
-                id(user.userId.toString())
+                id("ID: " + user.userId.toString())
                 title(user.userName)
                 subtitle("Rep: " + user.reputation.toString())
                 image(user.imageUrl)
@@ -60,14 +50,17 @@ class UsersFragment : BaseFragment() {
                 }
             }
         }
-
     }
 
+    /* this gets called anytime the viewModel's state changes
+    *  epoxy by design will do a diff check on data
+    *  you can access the state of multiple viewModels as well */
     override fun invalidate() = withState(viewModel) { state ->
         super.invalidate()
         swipeRefreshLayout.isRefreshing = state.users is Loading || state.users is Uninitialized
     }
 
+    /* send all intents to the viewModel via this observable */
     private fun intents(): Observable<UserListIntent> {
         return Observable.merge(
             initialIntent(),
@@ -94,26 +87,15 @@ class UsersFragment : BaseFragment() {
                 return false
             }
         })
-
         return searchViewRelay.hide()
     }
 
     private fun searchIntent(): Observable<UserListIntent.SearchIntent> {
-        val searchViewRelay = PublishRelay.create<UserListIntent.SearchIntent>()
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                searchViewRelay.accept(UserListIntent.SearchIntent(searchView.query.toString()))
-                return false
-            }
-
-            override fun onQueryTextChange(query: String?): Boolean = false
-        })
-
-        return searchViewRelay.hide()
-
+        return RxSearchView.queryTextChanges(searchView).map {
+            UserListIntent.SearchIntent(it.toString())
+        }.debounce(300, TimeUnit.MILLISECONDS)
     }
 
 }
-
 
 fun Any.logError(throwable: Throwable, message: String = "") = Log.e(javaClass.simpleName, message, throwable)

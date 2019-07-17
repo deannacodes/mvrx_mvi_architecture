@@ -22,12 +22,5 @@ class MainActivity : BaseMvRxActivity(), HasSupportFragmentInjector {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container1, UsersFragment())
-//                .replace(R.id.container1, UserProfileFragment.newInstance(1))
-                .commitNow()
-        }
     }
-
 }

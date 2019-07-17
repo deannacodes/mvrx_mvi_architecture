@@ -23,7 +23,7 @@ abstract class BaseFragment : BaseMvRxFragment() {
     private lateinit var recyclerView: EpoxyRecyclerView
     protected lateinit var searchView: SearchView
     protected lateinit var swipeRefreshLayout: SwipeRefreshLayout
-    protected val epoxyController by lazy { epoxyController() }
+    private val epoxyController by lazy { epoxyController() }
 
 
     override fun onAttach(context: Context?) {
