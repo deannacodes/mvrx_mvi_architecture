@@ -2,37 +2,48 @@ package com.deanna.mvrx.ui.users
 
 import com.airbnb.mvrx.*
 import com.deanna.mvrx.model.User
-import com.deanna.mvrx.model.UserResponse
 import com.deanna.mvrx.model.UsersResponse
 import com.deanna.mvrx.mvibase.MviViewModel
-import com.deanna.mvrx.mvibase.MviViewState
 import com.deanna.mvrx.network.StackOverflowService
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
 import io.reactivex.Observable
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 
-data class UsersState(val users: Async<List<User>> = Uninitialized) : MviViewState
+data class UsersState(val users: Async<List<User>> = Uninitialized) : MvRxState
 
 class UsersViewModel @AssistedInject constructor(
     @Assisted state: UsersState,
     private val stackOverflowService: StackOverflowService
 ) : MviViewModel<UserListIntent, UsersState>(state) {
 
+    private val intentsSubject: PublishSubject<UserListIntent> = PublishSubject.create()
+    private val disposables = CompositeDisposable()
+
+    private val intentsObservable = intentsSubject.hide()
+
     init {
         fetchUsers()
     }
 
     override fun processIntents(intents: Observable<UserListIntent>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        disposables.add(intents.subscribe(intentsSubject::onNext))
+        intentsSubject.subscribe { actionFromIntent(it) }
+
     }
 
-    override fun states(): Observable<UsersState> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    private fun actionFromIntent(intent: UserListIntent) {
+        return when (intent) {
+            UserListIntent.InitialIntent -> fetchUsers()
+            UserListIntent.RefreshIntent -> fetchUsers()
+            UserListIntent.ClearSearchIntent -> fetchUsers()
+            is UserListIntent.SearchIntent -> searchUsers(intent.searchTerm)
+        }
     }
 
     fun fetchUsers() = withState { state ->
-        if (state.users is Loading) return@withState
 
         stackOverflowService
             .getUsersRx()
@@ -44,7 +55,6 @@ class UsersViewModel @AssistedInject constructor(
     }
 
     fun searchUsers(query: String) = withState { state ->
-        if (state.users is Loading) return@withState
 
         stackOverflowService
             .getUsersRxSearch(query)
@@ -55,6 +65,10 @@ class UsersViewModel @AssistedInject constructor(
             }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        disposables.clear()
+    }
 
     @AssistedInject.Factory
     interface Factory {

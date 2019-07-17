@@ -15,10 +15,18 @@ import com.airbnb.mvrx.fragmentViewModel
 import com.airbnb.mvrx.withState
 import com.deanna.mvrx.R
 import com.deanna.mvrx.mvibase.BaseFragment
+import com.deanna.mvrx.mvibase.MviIntent
 import com.deanna.mvrx.mvibase.simpleController
 import com.deanna.mvrx.ui.userprofile.UserProfileArgs
 import com.deanna.mvrx.ui.views.basicRow
+import com.jakewharton.rxbinding2.support.v4.widget.RxSwipeRefreshLayout
+import com.jakewharton.rxbinding2.widget.RxSearchView
+import com.jakewharton.rxbinding2.widget.SearchViewQueryTextEvent
+import com.jakewharton.rxrelay2.PublishRelay
 import dagger.android.support.AndroidSupportInjection
+import io.reactivex.Observable
+import io.reactivex.ObservableTransformer
+import io.reactivex.subjects.PublishSubject
 import javax.inject.Inject
 
 class UsersFragment : BaseFragment() {
@@ -30,21 +38,7 @@ class UsersFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.asyncSubscribe(UsersState::users)
-        swipeRefreshLayout.setOnRefreshListener { viewModel.fetchUsers() }
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                viewModel.searchUsers(query ?: "")
-                return false
-            }
-
-            override fun onQueryTextChange(query: String?): Boolean = false
-        })
-        searchView.setOnCloseListener(object : SearchView.OnCloseListener {
-            override fun onClose(): Boolean {
-                viewModel.fetchUsers()
-                return false
-            }
-        })
+        viewModel.processIntents(intents())
     }
 
 
@@ -69,10 +63,54 @@ class UsersFragment : BaseFragment() {
 
     }
 
-
     override fun invalidate() = withState(viewModel) { state ->
         super.invalidate()
         swipeRefreshLayout.isRefreshing = state.users is Loading || state.users is Uninitialized
+    }
+
+    private fun intents(): Observable<UserListIntent> {
+        return Observable.merge(
+            initialIntent(),
+            refreshIntent(),
+            clearSearchIntent(),
+            searchIntent()
+        )
+    }
+
+    private fun initialIntent(): Observable<UserListIntent.InitialIntent> {
+        return Observable.just(UserListIntent.InitialIntent)
+    }
+
+    private fun refreshIntent(): Observable<UserListIntent.RefreshIntent> {
+        return RxSwipeRefreshLayout.refreshes(swipeRefreshLayout)
+            .map { UserListIntent.RefreshIntent }
+    }
+
+    private fun clearSearchIntent(): Observable<UserListIntent.ClearSearchIntent> {
+        val searchViewRelay = PublishRelay.create<UserListIntent.ClearSearchIntent>()
+        searchView.setOnCloseListener(object : SearchView.OnCloseListener {
+            override fun onClose(): Boolean {
+                searchViewRelay.accept(UserListIntent.ClearSearchIntent)
+                return false
+            }
+        })
+
+        return searchViewRelay.hide()
+    }
+
+    private fun searchIntent(): Observable<UserListIntent.SearchIntent> {
+        val searchViewRelay = PublishRelay.create<UserListIntent.SearchIntent>()
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchViewRelay.accept(UserListIntent.SearchIntent(searchView.query.toString()))
+                return false
+            }
+
+            override fun onQueryTextChange(query: String?): Boolean = false
+        })
+
+        return searchViewRelay.hide()
+
     }
 
 }

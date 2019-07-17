@@ -15,5 +15,4 @@ import io.reactivex.Observable
  */
 abstract class MviViewModel<I : MviIntent, S : MvRxState>(initialState: S) : BaseMvRxViewModel<S>(initialState, debugMode = BuildConfig.DEBUG) {
     abstract fun processIntents(intents: Observable<I>)
-    abstract fun states(): Observable<S>
 }

@@ -7,7 +7,6 @@ import com.deanna.mvrx.model.User
 import com.deanna.mvrx.model.UserResponse
 import com.deanna.mvrx.model.UsersResponse
 import com.deanna.mvrx.mvibase.MviViewModel
-import com.deanna.mvrx.mvibase.MviViewState
 import com.deanna.mvrx.network.StackOverflowService
 import com.deanna.mvrx.ui.users.UserListIntent
 import com.squareup.inject.assisted.Assisted
@@ -23,7 +22,7 @@ data class UserProfileArgs(val id: Int) : Parcelable
 data class UserProfileState(
     val id: Int,
     val user: Async<User> = Uninitialized
-) : MviViewState {
+) : MvRxState {
     constructor(args: UserProfileArgs) : this(id = args.id)
 }
 
@@ -40,7 +39,7 @@ class UserProfileViewModel @AssistedInject constructor(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun states(): Observable<UserProfileState> {
+    fun states(): Observable<UserProfileState> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 

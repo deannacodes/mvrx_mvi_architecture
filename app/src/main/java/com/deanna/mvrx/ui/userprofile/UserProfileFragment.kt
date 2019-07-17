@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
+import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.airbnb.epoxy.EpoxyRecyclerView
 import com.airbnb.mvrx.*
@@ -24,6 +25,7 @@ class UserProfileFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         viewModel.asyncSubscribe(UserProfileState::user)
+        searchView.isVisible = false
         swipeRefreshLayout.setOnRefreshListener { viewModel.fetchUser() }
     }
 

@@ -13,7 +13,9 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.airbnb.epoxy.EpoxyRecyclerView
 import com.airbnb.mvrx.*
 import com.deanna.mvrx.R
+import com.deanna.mvrx.ui.users.UserListIntent
 import dagger.android.support.AndroidSupportInjection
+import io.reactivex.Observable
 
 
 abstract class BaseFragment : BaseMvRxFragment() {

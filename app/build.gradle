@@ -41,6 +41,7 @@ dependencies {
     def navVersion = "2.0.0"
     def moshiVersion = "1.6.0"
     def retrofitVersion = "2.5.0"
+    def rxBindingVersion = "2.1.1"
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -89,4 +90,11 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
+
+    implementation "com.jakewharton.rxbinding2:rxbinding-kotlin:$rxBindingVersion" // https://github.com/JakeWharton/RxBinding
+    implementation "com.jakewharton.rxbinding2:rxbinding-appcompat-v7-kotlin:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding2:rxbinding-recyclerview-v7-kotlin:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding2:rxbinding-design-kotlin:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding2:rxbinding-support-v4-kotlin:$rxBindingVersion"
+    implementation 'com.jakewharton.rxrelay2:rxrelay:2.1.0'
 }
