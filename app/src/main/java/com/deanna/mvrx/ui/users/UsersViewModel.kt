@@ -30,6 +30,8 @@ class UsersViewModel @AssistedInject constructor(
 
     override fun processIntents(intents: Observable<UserListIntent>) {
         disposables.add(intents.subscribe(intentsSubject::onNext))
+        intentsSubject.subscribe { actionFromIntent(it) }
+
     }
 
     private fun actionFromIntent(intent: UserListIntent) {
