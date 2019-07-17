@@ -30,8 +30,6 @@ class UsersViewModel @AssistedInject constructor(
 
     override fun processIntents(intents: Observable<UserListIntent>) {
         disposables.add(intents.subscribe(intentsSubject::onNext))
-        intentsSubject.subscribe { actionFromIntent(it) }
-
     }
 
     private fun actionFromIntent(intent: UserListIntent) {
@@ -43,7 +41,13 @@ class UsersViewModel @AssistedInject constructor(
         }
     }
 
-    fun fetchUsers() = withState { state ->
+    override fun onCleared() {
+        super.onCleared()
+        disposables.clear()
+    }
+
+
+    private fun fetchUsers() = withState { state ->
 
         stackOverflowService
             .getUsersRx()
@@ -54,7 +58,7 @@ class UsersViewModel @AssistedInject constructor(
             }
     }
 
-    fun searchUsers(query: String) = withState { state ->
+    private fun searchUsers(query: String) = withState { state ->
 
         stackOverflowService
             .getUsersRxSearch(query)
@@ -63,11 +67,6 @@ class UsersViewModel @AssistedInject constructor(
             .execute {
                 copy(users = it)
             }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        disposables.clear()
     }
 
     @AssistedInject.Factory
