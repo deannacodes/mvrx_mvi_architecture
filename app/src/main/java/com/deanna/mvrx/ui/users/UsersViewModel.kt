@@ -2,25 +2,25 @@ package com.deanna.mvrx.ui.users
 
 import com.airbnb.mvrx.*
 import com.deanna.mvrx.model.User
-import com.deanna.mvrx.model.UsersResponse
 import com.deanna.mvrx.mvibase.MviViewModel
-import com.deanna.mvrx.network.StackOverflowService
+import com.deanna.mvrx.repository.UserRepository
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 
 /* MvRx has a class, Async. Under the hood it's an observable
  * It's a sealed class with Uninitialized, Loading, Success, and Fail types
  * we can check the type and render accordingly */
-data class UsersState(val users: Async<List<User>> = Uninitialized,
-                      val query: String = "") : MvRxState
+data class UsersState(
+    val users: Async<List<User>> = Uninitialized,
+    val query: String = ""
+) : MvRxState
 
 class UsersViewModel @AssistedInject constructor(
     @Assisted state: UsersState,
-    private val stackOverflowService: StackOverflowService
+    private val userRepository: UserRepository
 ) : MviViewModel<UserListIntent, UsersState>(state) {
 
     private val intentsSubject: BehaviorSubject<UserListIntent> = BehaviorSubject.create()
@@ -40,7 +40,7 @@ class UsersViewModel @AssistedInject constructor(
             UserListIntent.InitialIntent -> fetchInitialUsers()
             UserListIntent.RefreshIntent -> fetchUsers()
             UserListIntent.ClearSearchIntent -> fetchUsers()
-            is UserListIntent.SearchIntent -> searchUsers(intent.searchTerm)
+            is UserListIntent.SearchIntent -> searchUsers(intent.query, intent.network)
         }
     }
 
@@ -54,36 +54,23 @@ class UsersViewModel @AssistedInject constructor(
      *  Loading will actually have a "null" value, whereas Success will
      *  include the result.
      *  the subscription disposal is taken care of by MvRx */
-    private fun fetchInitialUsers() = withState { state ->
-        if (state.users is Loading) return@withState
 
-        if (state.users is Uninitialized) {
-            stackOverflowService.getUsersRx()
-                .map(UsersResponse::toUsers)
-                .subscribeOn(Schedulers.io())
-                .execute { copy(users = it) }
-        } else {
-            return@withState
-        }
+    private fun fetchInitialUsers() = withState { state ->
+        if (state.users is Uninitialized) fetchUsers()
+        else return@withState
     }
 
     private fun fetchUsers() = withState { state ->
         if (state.users is Loading) return@withState
-
-        stackOverflowService.getUsersRx()
-            .map(UsersResponse::toUsers)
-            .subscribeOn(Schedulers.io())
-            .execute { copy(users = it) }
+        userRepository.getUsersRx().execute { copy(users = it) }
     }
 
-    private fun searchUsers(query: String) = withState { state ->
-        if (query != state.query){
-            if (state.users is Loading) return@withState
+    private fun searchUsers(query: String, network: Boolean) = withState { state ->
+        if (state.users is Loading) return@withState
 
-            stackOverflowService.getUsersRxSearch(query)
-                .map(UsersResponse::toUsers)
-                .subscribeOn(Schedulers.io())
-                .execute { copy(users = it, query = query) }}
+        if (network) userRepository.getUsersRxSearch(query).execute { copy(users = it, query = query) }
+        else userRepository.getUsersRxLocalSearch(query).execute { copy(users = it, query = query) }
+
     }
 
     @AssistedInject.Factory

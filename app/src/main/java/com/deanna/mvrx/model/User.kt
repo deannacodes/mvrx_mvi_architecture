@@ -8,5 +8,5 @@ data class User(
     val userName: String,
     val reputation: Int,
     val imageUrl: String,
-    val websiteUrl: String
+    val websiteUrl: String?
 )

@@ -59,6 +59,8 @@ dependencies {
     // Room
     implementation "androidx.room:room-runtime:$roomVersion"
     implementation "androidx.room:room-rxjava2:$roomVersion"
+    kapt "androidx.room:room-compiler:$roomVersion" // For Kotlin use kapt instead of annotationProcessor
+    implementation "androidx.room:room-ktx:$roomVersion"
 
     // Dagger2
     implementation "com.google.dagger:dagger:$daggerVersion"

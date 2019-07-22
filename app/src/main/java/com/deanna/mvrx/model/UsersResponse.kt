@@ -1,5 +1,6 @@
 package com.deanna.mvrx.model
 
+import com.deanna.mvrx.database.UserEntity
 import com.google.gson.annotations.SerializedName
 
 data class UsersResponse(
@@ -9,22 +10,44 @@ data class UsersResponse(
     @SerializedName("quota_remaining") val quota_remaining: Int
 ) {
     fun toUsers(): List<User> {
-        return if (this.userResponses == null) emptyList()
-        else this.userResponses.map {
-            User(it.user_id ?: -1, it.display_name ?: "", it.reputation ?: -1, it.profile_image ?: "", it.website_url ?: "")
+        return this.userResponses.map {
+            User(
+                it.user_id ?: -1,
+                it.display_name ?: "",
+                it.reputation ?: -1,
+                it.profile_image ?: "",
+                it.website_url ?: ""
+            )
         }
     }
 
     fun toUser(): User {
         val user = this.userResponses[0]
-        return User(user.user_id, user.display_name, user.reputation, user.profile_image ?: "", user.website_url ?: "")
+        return User(
+            user.user_id,
+            user.display_name,
+            user.reputation,
+            user.profile_image ?: "",
+            user.website_url ?: ""
+        )
+    }
+
+    fun toUserEntities(): List<UserEntity> {
+        return this.userResponses.map {
+            UserEntity(
+                it.user_id,
+                it.display_name,
+                it.reputation,
+                it.profile_image,
+                it.website_url
+            )
+        }
     }
 }
 
 data class UserResponse(
     @SerializedName("accept_rate") val accept_rate: Int,
     @SerializedName("account_id") val account_id: Int,
-    @SerializedName("badge_counts") val badge_counts: BadgeCounts,
     @SerializedName("creation_date") val creation_date: Int,
     @SerializedName("display_name") val display_name: String,
     @SerializedName("is_employee") val is_employee: Boolean,
@@ -42,10 +65,4 @@ data class UserResponse(
     @SerializedName("user_id") val user_id: Int,
     @SerializedName("user_type") val user_type: String,
     @SerializedName("website_url") val website_url: String
-)
-
-data class BadgeCounts(
-    @SerializedName("bronze") val bronze: Int,
-    @SerializedName("gold") val gold: Int,
-    @SerializedName("silver") val silver: Int
 )

@@ -4,7 +4,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.SearchView
-import com.airbnb.mvrx.*
+import com.airbnb.mvrx.Loading
+import com.airbnb.mvrx.Uninitialized
+import com.airbnb.mvrx.fragmentViewModel
+import com.airbnb.mvrx.withState
 import com.deanna.mvrx.R
 import com.deanna.mvrx.mvibase.BaseFragment
 import com.deanna.mvrx.mvibase.simpleController
@@ -14,7 +17,6 @@ import com.jakewharton.rxbinding2.support.v4.widget.RxSwipeRefreshLayout
 import com.jakewharton.rxbinding2.widget.RxSearchView
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class UsersFragment : BaseFragment() {
@@ -63,10 +65,12 @@ class UsersFragment : BaseFragment() {
     /* send all intents to the viewModel via this observable */
     private fun intents(): Observable<UserListIntent> {
         return Observable.merge(
-            initialIntent(),
-            refreshIntent(),
-            clearSearchIntent(),
-            searchIntent()
+            listOf(
+                initialIntent(),
+                refreshIntent(),
+                clearSearchIntent(),
+                searchIntent()
+            )
         )
     }
 
@@ -91,9 +95,20 @@ class UsersFragment : BaseFragment() {
     }
 
     private fun searchIntent(): Observable<UserListIntent.SearchIntent> {
-        return RxSearchView.queryTextChanges(searchView).map {
-            UserListIntent.SearchIntent(it.toString())
-        }.debounce(300, TimeUnit.MILLISECONDS)
+        val searchViewRelay = PublishRelay.create<UserListIntent.SearchIntent>()
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchViewRelay.accept(UserListIntent.SearchIntent(query!!, true))
+                return false
+            }
+
+            override fun onQueryTextChange(query: String?): Boolean {
+                if (query.isNullOrBlank()) searchViewRelay.accept(UserListIntent.SearchIntent(query!!, true))
+                else searchViewRelay.accept(UserListIntent.SearchIntent(query!!))
+                return false
+            }
+        })
+        return searchViewRelay.hide()
     }
 
 }
