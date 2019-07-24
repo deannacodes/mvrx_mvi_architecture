@@ -6,7 +6,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "userResponses")
-data class UserEntity (
+data class UserEntity(
     @ColumnInfo(name = "id") @PrimaryKey @field:NonNull val userId: Int,
     @ColumnInfo(name = "display_name") val userName: String,
     @ColumnInfo(name = "reputation") val reputation: Int,

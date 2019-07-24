@@ -1,20 +1,15 @@
 package com.deanna.mvrx.ui.userprofile
 
-import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.SearchView
 import androidx.core.view.isVisible
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.airbnb.epoxy.EpoxyRecyclerView
-import com.airbnb.mvrx.*
-import com.deanna.mvrx.R
+import com.airbnb.mvrx.Loading
+import com.airbnb.mvrx.Uninitialized
+import com.airbnb.mvrx.fragmentViewModel
+import com.airbnb.mvrx.withState
 import com.deanna.mvrx.mvibase.BaseFragment
 import com.deanna.mvrx.mvibase.simpleController
 import com.deanna.mvrx.ui.views.profile
-import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
 
 class UserProfileFragment : BaseFragment() {
@@ -51,18 +46,5 @@ class UserProfileFragment : BaseFragment() {
 
             }
         }
-    }
-
-
-    companion object {
-        fun newInstance(userId: Long): UserProfileFragment =
-            UserProfileFragment().apply {
-                arguments = Bundle().apply {
-                    putParcelable(
-                        MvRx.KEY_ARG,
-                        UserProfileArgs(id)
-                    )
-                }
-            }
     }
 }

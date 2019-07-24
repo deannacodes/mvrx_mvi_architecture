@@ -26,11 +26,6 @@ class UsersFragment : BaseFragment() {
     private val viewModel: UsersViewModel by fragmentViewModel()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        /* subscribe to Async object in the state of the viewModel
-         * we'll know when it changes */
-        viewModel.asyncSubscribe(UsersState::users) {
-            //do something on success
-        }
         /* send intents directly to the view model
         *  keep the fragment dumb */
         viewModel.processIntents(intents())
@@ -104,7 +99,7 @@ class UsersFragment : BaseFragment() {
 
             override fun onQueryTextChange(query: String?): Boolean {
                 if (query.isNullOrBlank()) searchViewRelay.accept(UserListIntent.SearchIntent(query!!, true))
-                else searchViewRelay.accept(UserListIntent.SearchIntent(query!!))
+                else searchViewRelay.accept(UserListIntent.SearchIntent(query))
                 return false
             }
         })

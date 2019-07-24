@@ -13,7 +13,7 @@ import io.reactivex.subjects.BehaviorSubject
 /* MvRx has a class, Async. Under the hood it's an observable
  * It's a sealed class with Uninitialized, Loading, Success, and Fail types
  * we can check the type and render accordingly */
-data class UsersState(
+data class UsersState (
     val users: Async<List<User>> = Uninitialized,
     val query: String = ""
 ) : MvRxState
@@ -23,14 +23,12 @@ class UsersViewModel @AssistedInject constructor(
     private val userRepository: UserRepository
 ) : MviViewModel<UserListIntent, UsersState>(state) {
 
-    private val intentsSubject: BehaviorSubject<UserListIntent> = BehaviorSubject.create()
     private val disposables = CompositeDisposable()
 
     override fun processIntents(intents: Observable<UserListIntent>) {
         /* subscribe to our intents with a BehaviorSubject
          * locally subscribe to to the BehaviorSubject */
-        disposables.add(intents.subscribe(intentsSubject::onNext))
-        disposables.add(intentsSubject.subscribe { actionFromIntent(it) })
+        disposables.add(intents.subscribe{ actionFromIntent(it) })
     }
 
     /* we can do actions directly from the intent since the
@@ -54,7 +52,6 @@ class UsersViewModel @AssistedInject constructor(
      *  Loading will actually have a "null" value, whereas Success will
      *  include the result.
      *  the subscription disposal is taken care of by MvRx */
-
     private fun fetchInitialUsers() = withState { state ->
         if (state.users is Uninitialized) fetchUsers()
         else return@withState
@@ -70,7 +67,6 @@ class UsersViewModel @AssistedInject constructor(
 
         if (network) userRepository.getUsersRxSearch(query).execute { copy(users = it, query = query) }
         else userRepository.getUsersRxLocalSearch(query).execute { copy(users = it, query = query) }
-
     }
 
     @AssistedInject.Factory
