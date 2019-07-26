@@ -1,6 +1,7 @@
 package com.deanna.mvrx.repository
 
 import com.deanna.mvrx.database.UserDao
+import com.deanna.mvrx.database.UserEntity
 import com.deanna.mvrx.model.User
 import com.deanna.mvrx.network.StackOverflowSyncer
 import io.reactivex.Single
@@ -14,58 +15,26 @@ class UserRepository @Inject constructor(
     fun getUsersRx(): Single<List<User>> {
         return stackOverflowSyncer.refreshUsers().flatMap {
             userDao.getUsersRx().map {
-                it.map { entity ->
-                    User(
-                        entity.userId,
-                        entity.userName,
-                        entity.reputation,
-                        entity.imageUrl,
-                        entity.websiteUrl
-                    )
-                }
+                it.map(UserEntity::toUserModel)
             }
         }
     }
 
     fun getUserRx(id: Int): Single<User> {
-        return userDao.getUserDetailRx(id).map { entity ->
-            User(
-                entity.userId,
-                entity.userName,
-                entity.reputation,
-                entity.imageUrl,
-                entity.websiteUrl
-            )
-        }
+        return userDao.getUserDetailRx(id).map(UserEntity::toUserModel)
     }
 
 
     fun getUsersRxLocalSearch(query: String): Single<List<User>> {
         return userDao.getUsersRxSearch(query).map {
-            it.map { entity ->
-                User(
-                    entity.userId,
-                    entity.userName,
-                    entity.reputation,
-                    entity.imageUrl,
-                    entity.websiteUrl
-                )
-            }
+            it.map(UserEntity::toUserModel)
         }
     }
 
     fun getUsersRxSearch(query: String): Single<List<User>> {
         return stackOverflowSyncer.refreshUsersSearch(query).flatMap {
             userDao.getUsersRxSearch(query).map {
-                it.map { entity ->
-                    User(
-                        entity.userId,
-                        entity.userName,
-                        entity.reputation,
-                        entity.imageUrl,
-                        entity.websiteUrl
-                    )
-                }
+                it.map(UserEntity::toUserModel)
             }
         }
     }

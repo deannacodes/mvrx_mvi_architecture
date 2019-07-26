@@ -14,7 +14,7 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(user: UserEntity)
 
-    @Query("SELECT * FROM userResponses") //TODO - Sort?
+    @Query("SELECT * FROM userResponses")
     fun getUsersRx(): Single<List<UserEntity>>
 
     @Query("SELECT * FROM userResponses WHERE display_name LIKE '%' || :query || '%' ")

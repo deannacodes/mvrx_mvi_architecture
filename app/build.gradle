@@ -20,6 +20,7 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    testOptions.unitTests.includeAndroidResources = true
     buildTypes {
         release {
             minifyEnabled false
@@ -42,6 +43,7 @@ dependencies {
     def moshiVersion = "1.6.0"
     def retrofitVersion = "2.5.0"
     def rxBindingVersion = "2.1.1"
+    def assertJVersion = '3.12.0'
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -92,6 +94,13 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    testImplementation 'com.android.support.test:runner:1.0.2'
+    testImplementation 'org.robolectric:robolectric:4.3'
+    testImplementation 'androidx.test:core:1.2.0'
+    testImplementation 'androidx.test.ext:junit:1.1.1'
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0"
+    testImplementation "org.assertj:assertj-core:$assertJVersion"
+    androidTestImplementation "org.assertj:assertj-core:$assertJVersion"
 
     implementation "com.jakewharton.rxbinding2:rxbinding-kotlin:$rxBindingVersion" // https://github.com/JakeWharton/RxBinding
     implementation "com.jakewharton.rxbinding2:rxbinding-appcompat-v7-kotlin:$rxBindingVersion"
@@ -99,4 +108,6 @@ dependencies {
     implementation "com.jakewharton.rxbinding2:rxbinding-design-kotlin:$rxBindingVersion"
     implementation "com.jakewharton.rxbinding2:rxbinding-support-v4-kotlin:$rxBindingVersion"
     implementation 'com.jakewharton.rxrelay2:rxrelay:2.1.0'
+
+
 }
